@@ -48,8 +48,8 @@ build_project:
     - make release
   artifacts:
     paths:
-      - bin/release/gitlab-downloader-*.tar.gz
-      - bin/release/gitlab-downloader-*.zip
+      - bin/releases/gitlab-downloader-*.tar.gz
+      - bin/releases/gitlab-downloader-*.zip
     expire_in: 1 hour
   except:
     - main
