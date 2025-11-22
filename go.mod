@@ -1,6 +1,6 @@
 module hufschlaeger.net/gitlab-downloader
 
-go 1.25.4
+go 1.23.9
 
 require github.com/schollz/progressbar/v3 v3.18.0
 
