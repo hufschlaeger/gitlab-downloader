@@ -16,13 +16,14 @@ func TestFileAdapter_CreateFile_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	defer wc.Close()
-
 	// write some bytes
 	if _, err := io.WriteString(wc, "hello"); err != nil {
 		t.Fatalf("write failed: %v", err)
 	}
-	wc.Close()
+	// Close once and verify
+	if err := wc.Close(); err != nil {
+		t.Fatalf("failed to close file: %v", err)
+	}
 
 	b, err := os.ReadFile(path)
 	if err != nil {
