@@ -65,7 +65,7 @@ func (a *Adapter) doRequest(url string, result interface{}) error {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			_ = fmt.Errorf("failed: to close connection %w", err)
 		}
 	}(resp.Body)
 

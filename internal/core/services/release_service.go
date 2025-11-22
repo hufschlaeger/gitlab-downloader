@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"hufschlaeger.net/gitlab-downloader/internal/core/domain"
@@ -50,7 +51,12 @@ func (s *ReleaseService) DownloadRelease(req domain.DownloadRequest) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
-	defer file.Close()
+	defer func(file io.WriteCloser) {
+		err := file.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to close file: %w", err)
+		}
+	}(file)
 
 	// Download
 	if err := s.downloader.DownloadFromURL(url, file); err != nil {
