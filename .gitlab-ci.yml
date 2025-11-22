@@ -82,7 +82,7 @@ create_release:
 
     # Artefakte auflisten
     - echo "📦 Generated artifacts:"
-    - ls -la bin/release/
+    - ls -la bin/releases/
 
     # Release-Beschreibung erstellen
     - |
@@ -100,7 +100,7 @@ create_release:
       echo "## 📦 Installation" >> release.env
       echo "\`\`\`bash" >> release.env
       echo "# Download for your platform:" >> release.env
-      echo "curl -L $CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/release/gitlab-downloader-linux-amd64.tar.gz" >> release.env
+      echo "curl -L $CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/releases/gitlab-downloader-linux-amd64.tar.gz" >> release.env
       echo "tar -xzf gitlab-downloader-linux-amd64.tar.gz" >> release.env
       echo "./gitlab-downloader-linux-amd64 --help" >> release.env
       echo "\`\`\`" >> release.env
@@ -121,16 +121,16 @@ create_release:
     assets:
       links:
         - name: '🐧 Linux AMD64 Binary'
-          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/release/gitlab-downloader-linux-amd64.tar.gz'
+          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/releases/gitlab-downloader-linux-amd64.tar.gz'
         - name: '🍎 macOS Intel (AMD64) Binary'
-          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/release/gitlab-downloader-darwin-amd64.tar.gz'
+          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/releases/gitlab-downloader-darwin-amd64.tar.gz'
         - name: '🍎 macOS Apple Silicon (ARM64) Binary'
-          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/release/gitlab-downloader-darwin-arm64.tar.gz'
+          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/releases/gitlab-downloader-darwin-arm64.tar.gz'
         - name: '🪟 Windows AMD64 Binary'
-          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/release/gitlab-downloader-windows-amd64.zip'
+          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/bin/releases/gitlab-downloader-windows-amd64.zip'
 
   only:
     - main
 
   # Optional: Automatisch bei merge oder manuell
-  when: manual  # Ändere zu "on_success" für automatische Releases
+  when: on_success  # Ändere zu "on_success" für automatische Releases
