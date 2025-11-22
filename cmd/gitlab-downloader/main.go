@@ -24,7 +24,7 @@ func main() {
 
 	// Secondary Adapters (Driven)
 	httpClient := http.NewInsecureClient(config.Proxy)
-	gitlabAdapter := gitlab.NewAdapter("https://gitlab.la-bw.de", config.Token, httpClient)
+	gitlabAdapter := gitlab.NewAdapter(config.GitLabURL, config.Token, httpClient)
 	downloadAdapter := http.NewDownloadAdapter(httpClient)
 	fileAdapter := http.NewFileAdapter()
 
@@ -39,4 +39,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
+
+	fmt.Println("Download completed successfully")
 }
