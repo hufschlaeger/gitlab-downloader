@@ -6,6 +6,7 @@ WORKDIR /go/gitlab-downloader
 COPY . .
 RUN apk update --no-cache \
     && apk add --no-cache make zip golangci-lint \
+    && go mod tidy \
     && make build-linux
 
 FROM alpine:3.23 AS prod
