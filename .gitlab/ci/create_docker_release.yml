@@ -1,0 +1,30 @@
+create_github_package:
+  stage: release
+  image: quay.io/podman/stable
+  tags: [docker]
+  before_script:
+    - podman login ghcr.io -u "$GITHUB_USERNAME" --password "$GITHUB_TOKEN"
+  script:
+    - |
+      # Version bestimmen (Tag oder Fallback)
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        VERSION=$CI_COMMIT_TAG
+      
+        echo "🚀 Building and pushing image: ghcr.io/dhufe/gitlab-downloader:$VERSION"
+
+        # Build & Push mit Version-Tag
+        podman build -t ghcr.io/dhufe/gitlab-downloader:$VERSION .
+        podman push ghcr.io/dhufe/gitlab-downloader:$VERSION
+      
+        podman tag ghcr.io/dhufe/gitlab-downloader:$VERSION ghcr.io/dhufe/gitlab-downloader:latest
+        podman push ghcr.io/dhufe/gitlab-downloader:latest
+        echo "✅ Pushed 'latest' tag (official release)"
+      fi
+
+  # Regeln für Ausführung
+  rules:
+    - if: '$CI_COMMIT_TAG'
+
+  # Variablen (sollten in GitLab CI/CD-Variablen definiert sein)
+  variables:
+    GITHUB_USERNAME: "dhufe"  # Oder über CI/CD-Variable setzen
