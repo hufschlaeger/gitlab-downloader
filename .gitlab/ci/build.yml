@@ -33,31 +33,30 @@ build_gitlab_dev:
 
   script:
     - |
-      echo "🔨 Building development image for GitLab Registry"
+      echo "🔨 Building multi-arch images"
       
+      # Manifest erstellen
+      podman manifest create $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+      
+      # AMD64 Build
       podman build \
-        --platform $PLATFORMS \
-        --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
-        .
+        --platform linux/amd64 \
+        --build-arg TARGETARCH=amd64 \
+        --manifest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+        -f Containerfile .
       
-      # Push mit Commit-SHA
-      podman manifest push $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
-      echo "✅ Pushed: $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA"
+      # ARM64 Build (Cross-Compile via Go)
+      podman build \
+        --platform linux/amd64 \
+        --build-arg TARGETARCH=arm64 \
+        --manifest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+        -f Containerfile .
       
-      # Update 'latest' für main-Branch
-      podman tag $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA $GITLAB_IMAGE:latest
-      podman manifest push $GITLAB_IMAGE:latest
-      echo "✅ Pushed: $GITLAB_IMAGE:latest"
+      # Manifest pushen
+      podman manifest push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
       
-      # Branch-Tag (optional, für Feature-Branches)
-      if [ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]; then
-        BRANCH_TAG=$(echo $CI_COMMIT_BRANCH | sed 's/[^a-zA-Z0-9._-]/-/g')
-        podman tag $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA $GITLAB_IMAGE:$BRANCH_TAG
-        podman manifest push $GITLAB_IMAGE:$BRANCH_TAG
-        echo "✅ Pushed: $GITLAB_IMAGE:$BRANCH_TAG"
-      fi
-      
-      echo "📦 Available architectures:"
-      podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | grep -E '(architecture|os)'
+      # Optional: latest tag
+      podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
+      podman push $CI_REGISTRY_IMAGE:latest
   except:
     - main

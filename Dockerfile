@@ -1,8 +1,8 @@
-FROM --platform=$BUILDPLATFORM golang:1.25.5-alpine3.23 AS build
+# Build auf der nativen Plattform des Runners (amd64)
+FROM golang:1.25.5-alpine3.23 AS build
 
 ARG TARGETOS=linux
 ARG TARGETARCH
-ARG BUILDPLATFORM
 
 WORKDIR /go/gitlab-downloader
 
@@ -15,18 +15,19 @@ RUN apk update --no-cache \
        GOARCH=${TARGETARCH} \
        go build -ldflags="-w -s" -o gitlab-downloader ./cmd/...
 
-FROM --platform=$TARGETPLATFORM alpine:3.23 AS prod
-
-ARG TARGETPLATFORM
+# Prod-Stage mit Zielplattform
+FROM alpine:3.23 AS prod
 
 LABEL org.opencontainers.image.source=https://gitlab.hufschlaeger.net/
 LABEL org.opencontainers.image.description="gitlab.downloader"
 LABEL org.opencontainers.image.licenses=MIT
 
-RUN apk --no-cache add ca-certificates tzdata
-
+# Nur das Binary kopieren (kein apk add nötig wenn QEMU fehlt)
 WORKDIR /app
-
 COPY --from=build /go/gitlab-downloader/gitlab-downloader /app/
+
+# Statische Files für Timezone und CA-Certs vom Build-Image kopieren
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 
 ENTRYPOINT ["/app/gitlab-downloader"]
