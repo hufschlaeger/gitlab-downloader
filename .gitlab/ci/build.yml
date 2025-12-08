@@ -15,3 +15,47 @@ build_project:
     expire_in: 1 hour
   except:
     - main
+
+variables:
+  GITLAB_IMAGE: $CI_REGISTRY_IMAGE
+
+build_gitlab_dev:
+  variables:
+    GITLAB_IMAGE: $CI_REGISTRY_IMAGE
+  stage: build
+  image: quay.io/podman/stable:latest
+  tags: [docker]
+
+  before_script:
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  script:
+    - |
+      echo "🔨 Building development image for GitLab Registry"
+      
+      podman build \
+        --platform $PLATFORMS \
+        --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
+        .
+      
+      # Push mit Commit-SHA
+      podman manifest push $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+      echo "✅ Pushed: $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA"
+      
+      # Update 'latest' für main-Branch
+      podman tag $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA $GITLAB_IMAGE:latest
+      podman manifest push $GITLAB_IMAGE:latest
+      echo "✅ Pushed: $GITLAB_IMAGE:latest"
+      
+      # Branch-Tag (optional, für Feature-Branches)
+      if [ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]; then
+        BRANCH_TAG=$(echo $CI_COMMIT_BRANCH | sed 's/[^a-zA-Z0-9._-]/-/g')
+        podman tag $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA $GITLAB_IMAGE:$BRANCH_TAG
+        podman manifest push $GITLAB_IMAGE:$BRANCH_TAG
+        echo "✅ Pushed: $GITLAB_IMAGE:$BRANCH_TAG"
+      fi
+      
+      echo "📦 Available architectures:"
+      podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | grep -E '(architecture|os)'
+  except:
+    - main

@@ -4,6 +4,8 @@ stages:
   - build
   - release
 
+variables:
+  PLATFORMS: linux/amd64,linux/arm64
 
 include:
   - local: .gitlab/ci/lint.yml
