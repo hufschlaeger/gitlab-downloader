@@ -26,8 +26,4 @@ LABEL org.opencontainers.image.licenses=MIT
 WORKDIR /app
 COPY --from=build /go/gitlab-downloader/gitlab-downloader /app/
 
-# Statische Files für Timezone und CA-Certs vom Build-Image kopieren
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
-
 ENTRYPOINT ["/app/gitlab-downloader"]
