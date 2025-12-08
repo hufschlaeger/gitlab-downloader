@@ -31,7 +31,12 @@ func (a *DownloadAdapter) DownloadFromURL(url string, token string, writer io.Wr
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			return
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		// Bei 401/403 hilfreiche Fehlermeldung
