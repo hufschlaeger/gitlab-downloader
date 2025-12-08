@@ -35,6 +35,11 @@ build_gitlab_dev:
     - |
       echo "🔨 Building multi-arch images"
       
+      # Cleanup: Altes Manifest löschen falls vorhanden
+      echo "🧹 Cleaning up old manifests..."
+      podman manifest rm $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA 2>/dev/null || true
+      podman manifest rm $GITLAB_IMAGE:latest 2>/dev/null || true
+      
       # Manifest erstellen
       podman manifest create $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
 
