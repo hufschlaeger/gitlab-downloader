@@ -73,28 +73,23 @@ build_gitlab_dev:
       .
       
       echo "✅ ARM64 build successful"
-
-      # Push manifest
-      echo ""
-      echo "📤 Pushing manifest with all images..."
-      podman manifest push --all $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
-
-      # Latest tag
-      echo ""
-      echo "🏷️  Creating latest tag..."
-      podman manifest create $GITLAB_IMAGE:latest
-      podman manifest add $GITLAB_IMAGE:latest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
-      podman manifest push --all $GITLAB_IMAGE:latest
+      
+      # Push mit Commit SHA
+        echo ""
+        echo "📤 Pushing manifest with commit SHA tag..."
+        podman manifest push --all \
+        $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
+        docker://$GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+      
+      # Für "latest" das gleiche Manifest erneut pushen (nicht neu erstellen!)
+        echo ""
+        echo "📤 Pushing same manifest as latest tag..."
+        podman manifest push --all \
+        $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
+        docker://$GITLAB_IMAGE:latest
 
       echo ""
       echo "✅ Build and push completed!"
-      echo ""
-      echo "📦 Available images:"
-      echo "   • $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA"
-      echo "   • $GITLAB_IMAGE:latest"
-      echo ""
-      echo "🧪 Test with:"
-      echo "   podman pull --platform linux/amd64 $GITLAB_IMAGE:latest"
-      echo "   podman pull --platform linux/arm64 $GITLAB_IMAGE:latest"
+
   except:
     - main
