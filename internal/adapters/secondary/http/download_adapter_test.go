@@ -26,10 +26,12 @@ func TestDownloadAdapter_Success(t *testing.T) {
 	defer ts.Close()
 
 	client := &http.Client{}
+	var Token string
+
 	a := NewDownloadAdapter(client)
 
 	var buf strings.Builder
-	if err := a.DownloadFromURL(ts.URL, &buf); err != nil {
+	if err := a.DownloadFromURL(ts.URL, Token, &buf); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if buf.String() != body {
@@ -47,7 +49,8 @@ func TestDownloadAdapter_Non200(t *testing.T) {
 	client := &http.Client{}
 	a := NewDownloadAdapter(client)
 	var buf strings.Builder
-	err := a.DownloadFromURL(ts.URL, &buf)
+	var Token string
+	err := a.DownloadFromURL(ts.URL, Token, &buf)
 	if err == nil || !strings.Contains(err.Error(), "HTTP 404") {
 		t.Fatalf("expected HTTP 404 error, got %v", err)
 	}
@@ -57,7 +60,8 @@ func TestDownloadAdapter_RequestBuildError(t *testing.T) {
 	client := &http.Client{}
 	a := NewDownloadAdapter(client)
 	var buf strings.Builder
-	err := a.DownloadFromURL(":", &buf) // invalid URL triggers http.NewRequest error
+	var Token string
+	err := a.DownloadFromURL(":", Token, &buf) // invalid URL triggers http.NewRequest error
 	if err == nil || !strings.Contains(err.Error(), "failed to create request") {
 		t.Fatalf("expected request creation error, got %v", err)
 	}
@@ -73,7 +77,8 @@ func TestDownloadAdapter_WriterError(t *testing.T) {
 	client := &http.Client{}
 	a := NewDownloadAdapter(client)
 	ew := &errWriter{}
-	err := a.DownloadFromURL(ts.URL, ew)
+	var token string
+	err := a.DownloadFromURL(ts.URL, token, ew)
 	if err == nil || !strings.Contains(err.Error(), "download failed") {
 		t.Fatalf("expected download failed due to writer error, got %v", err)
 	}

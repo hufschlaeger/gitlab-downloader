@@ -64,7 +64,7 @@ type mockDownloader struct {
 	downloadErr error
 }
 
-func (m *mockDownloader) DownloadFromURL(url string, writer io.Writer) error {
+func (m *mockDownloader) DownloadFromURL(url string, token string, writer io.Writer) error {
 	if m.downloadErr != nil {
 		return m.downloadErr
 	}
