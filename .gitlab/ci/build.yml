@@ -29,7 +29,7 @@ build_gitlab_dev:
   before_script:
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - ls -la /proc/sys/fs/binfmt_misc/ | grep qemu || echo "QEMU registered"
-    - podman run --rm --privileged docker.io/tonistiigi/binfmt:latest --install all
+    #- podman run --rm --privileged docker.io/tonistiigi/binfmt:latest --install all
 
   script:
     - |
@@ -43,14 +43,14 @@ build_gitlab_dev:
         --platform linux/amd64 \
         --build-arg TARGETARCH=amd64 \
         --manifest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
-        -f Containerfile .
+        -f Dockerfile .
       
       # ARM64 Build (Cross-Compile via Go)
       podman build \
         --platform linux/amd64 \
         --build-arg TARGETARCH=arm64 \
         --manifest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
-        -f Containerfile .
+        -f Dockerfile .
       
       # Manifest pushen
       podman manifest push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
