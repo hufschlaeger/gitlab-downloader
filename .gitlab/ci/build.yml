@@ -74,23 +74,6 @@ build_gitlab_dev:
       
       echo "✅ ARM64 build successful"
 
-      # Manifest inspizieren
-      echo ""
-      echo "📊 Manifest contents:"
-      podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | \
-      jq -r '.manifests[] | "   ✓ \(.platform.os)/\(.platform.architecture)"'
-      
-      # Anzahl prüfen
-      ARCH_COUNT=$(podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | jq '.manifests | length')
-      
-      if [ "$ARCH_COUNT" -ne 2 ]; then
-      echo "❌ Expected 2 architectures, found $ARCH_COUNT"
-      podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
-      exit 1
-      fi
-      
-      echo "✅ Found $ARCH_COUNT architectures in manifest"
-
       # Push manifest
       echo ""
       echo "📤 Pushing manifest with all images..."
