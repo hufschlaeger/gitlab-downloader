@@ -40,32 +40,84 @@ build_gitlab_dev:
 
       # AMD64 Build
       echo "📦 Building AMD64..."
+       set -e  # Exit on error
+      
+      echo "🔨 Building multi-arch images"
+      
+      # Manifest erstellen
+      podman manifest create $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA || {
+        echo "❌ Failed to create manifest"
+        exit 1
+      }
+
+      # AMD64 Build mit Error Handling
+      echo ""
+      echo "📦 Building AMD64..."
       podman build \
         --platform linux/amd64 \
         --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
-        -f Dockerfile .
+        --file Dockerfile \
+        . || {
+        echo "❌ AMD64 build failed!"
+        exit 1
+      }
+      
+      echo "✅ AMD64 build successful"
 
-      # ARM64 Build - WICHTIG: --platform linux/arm64!
-      echo "📦 Building ARM64..."
+      # ARM64 Build mit Error Handling
+      echo ""
+      echo "📦 Building ARM64 (this may take longer)..."
       podman build \
         --platform linux/arm64 \
         --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
-        -f Dockerfile .
+        --file Dockerfile \
+        . || {
+        echo "❌ ARM64 build failed!"
+        podman manifest rm $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA 2>/dev/null || true
+        exit 1
+      }
       
-      # Manifest inspizieren
-        echo "📊 Manifest enthält:"
-        podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | grep -A 3 "platform"
+      echo "✅ ARM64 build successful"
 
-      # Manifest pushen (mit --all für alle Architekturen!)
-        echo "📤 Pushing manifest..."
-        podman manifest push --all $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+      # Manifest inspizieren BEVOR wir pushen
+      echo ""
+      echo "📊 Manifest contains:"
+      podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | \
+        grep -A 2 "platform" | grep -E "architecture|os" || {
+        echo "❌ Manifest inspection failed!"
+        exit 1
+      }
+      
+      # Prüfen ob beide Architekturen vorhanden sind
+      ARCH_COUNT=$(podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | \
+        grep -c "architecture" || echo "0")
+      
+      if [ "$ARCH_COUNT" -lt 2 ]; then
+        echo "❌ Expected 2 architectures, found $ARCH_COUNT"
+        podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+        exit 1
+      fi
+      
+      echo "✅ Found $ARCH_COUNT architectures in manifest"
 
-      # Latest tag (auch als Manifest!)
-        echo "🏷️  Creating latest tag..."
-        podman manifest create $GITLAB_IMAGE:latest
-        podman manifest add $GITLAB_IMAGE:latest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
-        podman manifest push --all $GITLAB_IMAGE:latest
-        
-        echo "✅ Build complete!"
+      # Jetzt pushen
+      echo ""
+      echo "📤 Pushing manifest with all images..."
+      podman manifest push --all $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA || {
+        echo "❌ Push failed!"
+        exit 1
+      }
+
+      # Latest tag
+      echo ""
+      echo "🏷️  Creating latest tag..."
+      podman manifest create $GITLAB_IMAGE:latest
+      podman manifest add $GITLAB_IMAGE:latest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+      podman manifest push --all $GITLAB_IMAGE:latest
+
+      echo ""
+      echo "✅ Build and push completed!"
+      echo "Verify with:"
+      echo "  podman manifest inspect $GITLAB_IMAGE:latest"
   except:
     - main
