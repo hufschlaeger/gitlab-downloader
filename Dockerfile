@@ -15,7 +15,10 @@ RUN apk update --no-cache \
        GOARCH=${TARGETARCH} \
        go build -ldflags="-w -s" -o gitlab-downloader ./cmd/...
 
-FROM --platform=$BUILDPLATFORM alpine:3.23 AS prod
+FROM --platform=$TARGETPLATFORM alpine:3.23 AS prod
+
+ARG TARGETPLATFORM
+
 LABEL org.opencontainers.image.source=https://gitlab.hufschlaeger.net/
 LABEL org.opencontainers.image.description="gitlab.downloader"
 LABEL org.opencontainers.image.licenses=MIT
