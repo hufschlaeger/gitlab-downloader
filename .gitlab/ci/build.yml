@@ -28,7 +28,7 @@ build_gitlab_dev:
 
   before_script:
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - podman run --rm --privileged docker.io/multiarch/qemu-user-static:register --reset
+    - podman run --rm --privileged docker.io/tonistiigi/binfmt:latest --install all
 
   script:
     - |
