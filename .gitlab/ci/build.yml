@@ -36,7 +36,7 @@ build_gitlab_dev:
       echo "🔨 Building multi-arch images"
       
       # Manifest erstellen
-      podman manifest create $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+      podman manifest --replace create $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
 
       # AMD64 Build
       echo "📦 Building AMD64..."
@@ -54,6 +54,7 @@ build_gitlab_dev:
       echo ""
       echo "📦 Building AMD64..."
       podman build \
+        --replace \
         --platform linux/amd64 \
         --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
         --file Dockerfile \
@@ -68,6 +69,7 @@ build_gitlab_dev:
       echo ""
       echo "📦 Building ARM64 (this may take longer)..."
       podman build \
+        --replace \
         --platform linux/arm64 \
         --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
         --file Dockerfile \
