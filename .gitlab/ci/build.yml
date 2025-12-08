@@ -36,27 +36,36 @@ build_gitlab_dev:
       echo "🔨 Building multi-arch images"
       
       # Manifest erstellen
-      podman manifest create $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-      
+      podman manifest create $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+
       # AMD64 Build
+      echo "📦 Building AMD64..."
       podman build \
         --platform linux/amd64 \
-        --build-arg TARGETARCH=amd64 \
-        --manifest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+        --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
         -f Dockerfile .
-      
-      # ARM64 Build (Cross-Compile via Go)
+
+      # ARM64 Build - WICHTIG: --platform linux/arm64!
+      echo "📦 Building ARM64..."
       podman build \
-        --platform linux/amd64 \
-        --build-arg TARGETARCH=arm64 \
-        --manifest $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+        --platform linux/arm64 \
+        --manifest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA \
         -f Dockerfile .
       
-      # Manifest pushen
-      podman manifest push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-      
-      # Optional: latest tag
-      podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
-      podman push $CI_REGISTRY_IMAGE:latest
+      # Manifest inspizieren
+        echo "📊 Manifest enthält:"
+        podman manifest inspect $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA | grep -A 3 "platform"
+
+      # Manifest pushen (mit --all für alle Architekturen!)
+        echo "📤 Pushing manifest..."
+        podman manifest push --all $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+
+      # Latest tag (auch als Manifest!)
+        echo "🏷️  Creating latest tag..."
+        podman manifest create $GITLAB_IMAGE:latest
+        podman manifest add $GITLAB_IMAGE:latest $GITLAB_IMAGE:$CI_COMMIT_SHORT_SHA
+        podman manifest push --all $GITLAB_IMAGE:latest
+        
+        echo "✅ Build complete!"
   except:
     - main
