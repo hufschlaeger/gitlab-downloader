@@ -19,6 +19,7 @@ func (a *Adapter) DownloadRelease(config *Config) error {
 		ReleaseTag:  config.Release,
 		OutputPath:  config.Output,
 		ExtIndex:    config.ExtIndex,
+		Token:       config.Token,
 	}
 
 	return a.service.DownloadRelease(req)

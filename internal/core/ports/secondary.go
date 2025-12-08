@@ -1,8 +1,9 @@
 package ports
 
 import (
-	"hufschlaeger.net/gitlab-downloader/internal/core/domain"
 	"io"
+
+	"hufschlaeger.net/gitlab-downloader/internal/core/domain"
 )
 
 // GitLabPort - Secondary Port (Driven)
@@ -13,7 +14,7 @@ type GitLabPort interface {
 
 // DownloadPort - Secondary Port (Driven)
 type DownloadPort interface {
-	DownloadFromURL(url string, writer io.Writer) error
+	DownloadFromURL(url string, token string, writer io.Writer) error
 }
 
 // FileSystemPort - Secondary Port (Driven)

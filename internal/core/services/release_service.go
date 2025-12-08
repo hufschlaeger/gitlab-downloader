@@ -59,7 +59,7 @@ func (s *ReleaseService) DownloadRelease(req domain.DownloadRequest) error {
 	}(file)
 
 	// Download
-	if err := s.downloader.DownloadFromURL(url, file); err != nil {
+	if err := s.downloader.DownloadFromURL(url, req.Token, file); err != nil {
 		return fmt.Errorf("download failed: %w", err)
 	}
 

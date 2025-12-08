@@ -31,4 +31,5 @@ type DownloadRequest struct {
 	ReleaseTag  string
 	OutputPath  string
 	ExtIndex    int
+	Token       string
 }
