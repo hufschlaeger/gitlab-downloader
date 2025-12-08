@@ -6,11 +6,7 @@ ARG BUILDPLATFORM
 
 WORKDIR /go/gitlab-downloader
 
-COPY go.mod go.sum ./
-RUN go mod download
-
 COPY . .
-
 RUN apk update --no-cache \
     && apk add --no-cache make zip \
     && go mod tidy \
