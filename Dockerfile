@@ -1,4 +1,4 @@
-FROM docker.io/golang:1.25.7-alpine3.23 AS build
+FROM docker.io/golang:1.26.0-alpine3.23 AS build
 LABEL org.opencontainers.image.source=https://gitlab.hufschlaeger.net/
 LABEL org.opencontainers.image.description="gitlab.downlaoder"
 LABEL org.opencontainers.image.licenses=MIT
